@@ -19,6 +19,8 @@ private:
 public:
     display(void);
 
+    bool moveToPos(Meshnode*, size_t, size_t);
+
     // getter
     Meshnode *getEntryNode();
     unsigned int getEntryX();
