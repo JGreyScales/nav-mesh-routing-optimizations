@@ -9,6 +9,7 @@ In short, I want to know "If the end target has moved x tiles from the last know
 My parameter for "what is better" is going to be time in seconds to reach target.
 
 
+-----------------------------------------------------
 
 Allows the creation of a mesh layer comprised of nodes with up to 4 neighbors mesh.h
 
