@@ -1,3 +1,4 @@
+#pragma once
 class Meshnode
 {
 private:
@@ -6,17 +7,22 @@ private:
     Meshnode *south;
     Meshnode *west;
     unsigned short int terrainDifficulty;
+    size_t x;
+    size_t y;
 public:
-    Meshnode(unsigned short int);
+    Meshnode(unsigned short int, size_t, size_t);
 
     void decoupleNeighbors(Meshnode*);
     void coupleNeighbor(Meshnode*, unsigned short int);
 
     // getter
-    Meshnode* northMesh();
-    Meshnode* eastMesh();
-    Meshnode* southMesh();
-    Meshnode* westMesh();
+    Meshnode* getNorthMesh();
+    Meshnode* getEastMesh();
+    Meshnode* getSouthMesh();
+    Meshnode* getWestMesh();
+    size_t getX();
+    size_t getY();
+    unsigned short int getTerrainDifficulty();
 
     // setter
     void setNorthMesh(Meshnode*);
@@ -28,8 +34,10 @@ public:
 };
 
 
-Meshnode::Meshnode(unsigned short int dif){
+Meshnode::Meshnode(unsigned short int dif, size_t x, size_t y){
     this->terrainDifficulty = dif;
+    this->x = x;
+    this->y = y;
     this->north = nullptr;
     this->east = nullptr;
     this->south = nullptr;
@@ -67,8 +75,7 @@ void Meshnode::decoupleNeighbors(Meshnode* nodeToDecouple){
         }
         this->west = nullptr;
     }
-    
-    
+    return;
 }
 
 // 1 = North, 2 = East, 3 = South, 4 = West
@@ -98,39 +105,56 @@ void Meshnode::coupleNeighbor(Meshnode* nodeToCouple, unsigned short int directi
             break;
         }
     }
+    return;
 }
 
-Meshnode* Meshnode::northMesh(void){
-    return north;
+Meshnode* Meshnode::getNorthMesh(void){
+    return this->north;
 }
 
-Meshnode* Meshnode::eastMesh(void){
-    return east;
+Meshnode* Meshnode::getEastMesh(void){
+    return this->east;
 }
 
-Meshnode* Meshnode::southMesh(void){
-    return south;
+Meshnode* Meshnode::getSouthMesh(void){
+    return this->south;
 }
 
-Meshnode* Meshnode::westMesh(void){
-    return west;
+Meshnode* Meshnode::getWestMesh(void){
+    return this->west;
 }
 
+size_t Meshnode::getX(void){
+    return this->x;
+}
+
+size_t Meshnode::getY(void){
+    return this->y;
+}
+
+unsigned short int Meshnode::getTerrainDifficulty()
+{
+    return this->terrainDifficulty;
+}
 
 void Meshnode::setNorthMesh(Meshnode* node){
     this->north = node;
+    return;
 }
 
 void Meshnode::setEastMesh(Meshnode* node){
     this->east = node;
+    return;
 }
 
 void Meshnode::setSouthMesh(Meshnode* node){
     this->south = node;
+    return;
 }
 
 void Meshnode::setWestMesh(Meshnode* node){
     this->west = node;
+    return;
 }
 
 
@@ -139,4 +163,5 @@ Meshnode::~Meshnode(){
     this->decoupleNeighbors(this->east);
     this->decoupleNeighbors(this->south);
     this->decoupleNeighbors(this->west);
+    return;
 }
