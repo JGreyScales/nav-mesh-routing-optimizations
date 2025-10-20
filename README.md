@@ -6,7 +6,7 @@ Create a basic machine learning system to compute when it is more efficent to re
 
 In short, I want to know "If the end target has moved x tiles from the last known cached position of it, is it more efficent to re-compute the quickest route, or to keep going to the last known position & only recompute once I arrive."
 
-My parameter for "what is better" is going to be time in seconds to reach target.
+My parameter for "what is better" is going to be time in ticks & exeuction time to reach target.
 
 
 -----------------------------------------------------

@@ -15,7 +15,7 @@ public:
     nodeMatrix(size_t, size_t);
 
     void printMatrix();
-    void addToMatrix(size_t, size_t);
+    void addToMatrix(size_t, size_t, bool = false);
     void removeFromMatrix(size_t, size_t);
 
     // getters
@@ -38,9 +38,11 @@ nodeMatrix::nodeMatrix(size_t entryNodeX, size_t entryNodeY)
 
 void nodeMatrix::printMatrix()
 {
-    for (std::vector<char> row : matrix){
+    for (std::vector<char> row : matrix)
+    {
         std::string line = "";
-        for (char column : row){
+        for (char column : row)
+        {
             line += column;
         }
         std::cout << line << std::endl;
@@ -48,7 +50,7 @@ void nodeMatrix::printMatrix()
 }
 
 // matrix[row][column]
-void nodeMatrix::addToMatrix(size_t x, size_t y)
+void nodeMatrix::addToMatrix(size_t x, size_t y, bool path = false)
 {
     // if we need increase the size of the vector to the left
     if (x < min_x)
@@ -74,16 +76,13 @@ void nodeMatrix::addToMatrix(size_t x, size_t y)
     if (x > matrix.size())
         matrix.resize(x + 1);
 
-
     // only scale rows to the required size as needed
     // this means each row may be a dynamic length
     // but will micro-optimize memory usage & iteration times
     if (y > matrix[x].size())
         matrix[x].resize(y + 1);
 
-
-    matrix[x][y] = 'x'; // actually set the value that was added
-
+    matrix[x][y] = path ? 'o' : 'x'; // actually set the value that was added
     return;
 }
 
