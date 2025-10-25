@@ -18,9 +18,9 @@ private:
     void calculateEntryPosition();
     void calculateNodeMatrix();
 
-    int display::pathdifficulty(std::array<Meshnode *, 3>);
+    int display::pathdifficulty(const std::array<Meshnode *, 3>&);
     double distanceToGoal(Meshnode *, size_t, size_t);
-    std::array<Meshnode*, 3> skimSearch(Meshnode *, size_t *, size_t *, std::array<Meshnode*, 3>, size_t = 0);
+    std::array<Meshnode *, 3> skimSearch(Meshnode *, size_t *, size_t *, std::array<Meshnode *, 3>, size_t = 0);
 
 public:
     display(void);
@@ -101,7 +101,7 @@ inline void display::calculateNodeMatrix()
     }
 }
 
-inline int display::pathdifficulty(std::array<Meshnode *, 3> path)
+inline int display::pathdifficulty(const std::array<Meshnode *, 3>& path)
 {
     int difficulty = 0;
     for (const auto &node : path)
@@ -117,47 +117,62 @@ inline int display::pathdifficulty(std::array<Meshnode *, 3> path)
 // Euclidean distance to goal
 inline double display::distanceToGoal(Meshnode *node, size_t goalX, size_t goalY)
 {
+    if (node == nullptr){
+        return -1;
+    }
     double dx = static_cast<double>(goalX) - node->getX();
     double dy = static_cast<double>(goalY) - node->getY();
     return std::sqrt(dx * dx + dy * dy);
 }
 
-
-// Recursive DFS skim search to find optimal path processing to depths of 3 before selecting best 
+// Recursive DFS skim search to find optimal path processing to depths of 3 before selecting best
 // option & then repeating until target met
-std::array<Meshnode*, 3> display::skimSearch(Meshnode* cNode, size_t* goalX, size_t* goalY, std::array<Meshnode*, 3> path, size_t cDepth = 0) {
-    if (cDepth >= 3 || !cNode) {
+std::array<Meshnode *, 3> display::skimSearch(Meshnode *cNode, size_t *goalX, size_t *goalY, std::array<Meshnode *, 3> path, size_t cDepth)
+{
+    if (cDepth >= 3 || !cNode)
+    {
         return path;
     }
 
     // Store current node at this depth
     path[cDepth] = cNode;
 
+    // done after the cNode is added to the path
+    if (cNode->getX() == *goalX && cNode->getY() == *goalY){
+        return path;
+    }
+
     // Set up directions
-    Meshnode* directions[4] = {
+    Meshnode *directions[4] = {
         cNode->getNorthMesh(),
         cNode->getEastMesh(),
         cNode->getSouthMesh(),
-        cNode->getWestMesh()
-    };
+        cNode->getWestMesh()};
 
     int excludedDirection = -1;
     double maxDistance = -1.0;
     int validDirections = 0;
 
     // Determine which direction points furthest from goal
-    for (size_t i = 0; i < 4; ++i) {
-        Meshnode* neighbor = directions[i];
-        if (neighbor) {
+    for (size_t i = 0; i < 4; ++i)
+    {
+        Meshnode *neighbor = directions[i];
+        if (neighbor)
+        {
             ++validDirections;
             double dist = distanceToGoal(neighbor, *goalX, *goalY);
 
-            if (dist > maxDistance) {
+            if (dist > maxDistance)
+            {
                 maxDistance = dist;
                 excludedDirection = static_cast<int>(i);
-            } else if (abs(dist - maxDistance) < 1e-6 && excludedDirection >= 0) {
+            }
+            // removes the possibility of exludedDirection being -1
+            else if (abs(dist - maxDistance) < 1e-6 && excludedDirection >= 0)
+            {
                 // Tie-breaker: higher terrain difficulty gets excluded
-                if (neighbor->getTerrainDifficulty() > directions[excludedDirection]->getTerrainDifficulty()) {
+                if (neighbor->getTerrainDifficulty() > directions[excludedDirection]->getTerrainDifficulty())
+                {
                     excludedDirection = static_cast<int>(i);
                 }
             }
@@ -165,28 +180,33 @@ std::array<Meshnode*, 3> display::skimSearch(Meshnode* cNode, size_t* goalX, siz
     }
 
     // If only one direction is valid, do not exclude it
-    if (validDirections <= 1) {
+    if (validDirections <= 1)
+    {
         excludedDirection = -1;
     }
 
     double bestScore = std::numeric_limits<double>::max();
-    std::array<Meshnode*, 3> bestPath = path;
+    std::array<Meshnode *, 3> bestPath = path;
 
     // Explore all directions except the excluded one
-    for (std::size_t i = 0; i < 4; ++i) {
-        if (static_cast<int>(i) == excludedDirection || !directions[i]) {
+    for (std::size_t i = 0; i < 4; ++i)
+    {
+        if (static_cast<int>(i) == excludedDirection || !directions[i])
+        {
             continue;
         }
-        std::array<Meshnode*, 3> copiedPath;
-        std::copy(path.begin(), path.end(), copiedPath);
-        std::array<Meshnode*, 3> candidatePath = skimSearch(directions[i], goalX, goalY, copiedPath, cDepth + 1);
+        std::array<Meshnode *, 3> copiedPath;
+        std::copy(path.begin(), path.end(), copiedPath.begin());
+        std::array<Meshnode *, 3> candidatePath = skimSearch(directions[i], goalX, goalY, copiedPath, cDepth + 1);
 
-        if (candidatePath[3 - 1]) {
+        if (candidatePath[3 - 1])
+        {
             double distance = distanceToGoal(candidatePath[2], *goalX, *goalY);
             double difficulty = static_cast<double>(this->pathdifficulty(candidatePath));
             double score = distance + difficulty;
 
-            if (score < bestScore) {
+            if (score < bestScore)
+            {
                 bestScore = score;
                 bestPath = std::move(candidatePath);
             }
@@ -207,6 +227,9 @@ display::display(void)
 
 inline bool display::moveToPos(size_t x, size_t y)
 {
+    bool destinationReached = false;
+    size_t maxIterations = static_cast<size_t>(this->distanceToGoal(this->entryNode, x, y) * 1.4);
+    size_t iterations = 0;
     // the matrix is already created
     // we do not need to generate the matrix map
     // we only need to generate the path
@@ -215,9 +238,33 @@ inline bool display::moveToPos(size_t x, size_t y)
     // this means the most straight path may not be the fastest
 
     std::stack<Meshnode *> path; // the stack will be our final path
-    int allowedDepth = (this->distanceToGoal(this->entryNode, x, y) * 1.3);
+    path.emplace(this->entryNode);
 
-    // spread out in every direction 3 tiles and find the lowest dif  route
+    while (!destinationReached && iterations < maxIterations)
+    {
+
+        // spread out in every direction 3 tiles and find the lowest dif route
+        std::array<Meshnode *, 3> skimpath = this->skimSearch(path.top(), &x, &y, {}, 0);
+        for (Meshnode *const node : skimpath)
+        {
+            if (node != path.top() && node != nullptr && !destinationReached)
+            {
+                path.emplace(node);
+                if (node->getX() == x && node->getY() == y)
+                {
+                    destinationReached = true;
+                }
+            }
+        }
+        iterations++;
+    }
+
+    while(!path.empty()){
+        this->matrix->addToMatrix(path.top()->getX(), path.top()->getY(), true);
+        path.pop();
+    }
+
+    return true;
 }
 
 inline Meshnode *display::getEntryNode()
